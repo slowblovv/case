@@ -401,6 +401,47 @@
             color: var(--primary);
             text-decoration: none;
         }
+
+        /* Адаптивность */
+        @media (max-width: 480px) {
+            .case {
+                width: 240px;
+                height: 280px;
+            }
+
+            .prize-item {
+                width: 70px;
+                height: 70px;
+                font-size: 30px;
+            }
+
+            .hero-title {
+                font-size: 24px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .case {
+                width: 320px;
+                height: 340px;
+            }
+
+            .prize-item {
+                width: 90px;
+                height: 90px;
+                font-size: 40px;
+            }
+        }
+
+        @media (min-height: 800px) {
+            .case-container {
+                height: 360px;
+            }
+
+            .case {
+                height: 360px;
+            }
+        }
     </style>
 </head>
 
@@ -465,7 +506,6 @@
             // Инициализация Telegram WebApp
             const tg = window.Telegram.WebApp;
             tg.expand();
-            tg.ready();
 
             // Установка темы
             document.documentElement.style.setProperty('--bg', tg.backgroundColor || '#0f172a');
@@ -499,7 +539,19 @@
                 { emoji: '✨', name: 'Эмодзи' },
                 { emoji: '🎟️', name: 'Звезды' },
                 { emoji: '🎨', name: 'NFT Art' },
-                { emoji: '👑', name: 'VIP' }
+                { emoji: '👑', name: 'VIP' },
+                { emoji: '💎', name: 'Premium' },
+                { emoji: '🚀', name: 'Ракета' },
+                { emoji: '🎮', name: 'Стикерпак' },
+                { emoji: '🖼️', name: 'Аватарка' },
+                { emoji: '✨', name: 'Эмодзи' },
+                { emoji: '🎟️', name: 'Звезды' },
+                { emoji: '🎨', name: 'NFT Art' },
+                { emoji: '👑', name: 'VIP' },
+                { emoji: '💎', name: 'Premium' },
+                { emoji: '🚀', name: 'Ракета' },
+                { emoji: '🎮', name: 'Стикерпак' },
+                { emoji: '🖼️', name: 'Аватарка' }
             ];
 
             // Финальные призы (реальные выигрыши)
@@ -517,12 +569,12 @@
                 balanceElement.textContent = userBalance;
             }
 
-            // Инициализация трека призов
+            // Инициализация трека призов с бесконечными элементами
             function initPrizesTrack() {
                 prizesTrack.innerHTML = '';
 
                 // Создаем достаточно элементов для бесконечного эффекта
-                const totalItems = 50;
+                const totalItems = 100; // Большое количество для бесконечного эффекта
                 for (let i = 0; i < totalItems; i++) {
                     const prize = spinningPrizes[i % spinningPrizes.length];
                     const prizeItem = document.createElement('div');
@@ -534,72 +586,6 @@
                     `;
                     prizesTrack.appendChild(prizeItem);
                 }
-            }
-
-            // Открытие кейса с оплатой
-            openCaseBtn.addEventListener('click', async () => {
-                if (isCaseOpening) return;
-
-                // Проверка баланса
-                if (userBalance < 10) {
-                    // Предложить купить звезды
-                    if (confirm('Недостаточно звезд! Хотите купить 10 звезд?')) {
-                        try {
-                            await buyStars();
-                        } catch (error) {
-                            console.error('Ошибка покупки:', error);
-                            tg.showAlert('Не удалось завершить покупку.');
-                        }
-                    }
-                    return;
-                }
-
-                isCaseOpening = true;
-                openCaseBtn.disabled = true;
-
-                // Списание звезд
-                userBalance -= 10;
-                updateBalance();
-
-                // Вибрация
-                if (tg.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('heavy');
-                }
-
-                // Начинаем вращение
-                startSpinning();
-            });
-
-            // Покупка звезд через Telegram Stars
-            async function buyStars() {
-                return new Promise((resolve, reject) => {
-                    // Создание инвойса
-                    const invoice = {
-                        title: "10 Telegram Stars",
-                        description: "Для открытия кейсов в StarBox",
-                        payload: "buy_10_stars",
-                        prices: [{
-                            label: "10 Stars",
-                            amount: 25 // 0.25 USD (1 Star = 0.025 USD)
-                        }],
-                        currency: "XTR", // Код валюты Telegram Stars
-                        provider_token: "", // Пусто для Stars
-                        max_tip_amount: 0,
-                        suggested_tip_amounts: []
-                    };
-
-                    // Открытие платежного интерфейса
-                    tg.openInvoice(JSON.stringify(invoice), (status) => {
-                        if (status === "paid") {
-                            tg.showAlert("Покупка успешна! Баланс обновлен.");
-                            userBalance += 10;
-                            updateBalance();
-                            resolve();
-                        } else {
-                            reject(new Error(`Покупка отменена: ${status}`));
-                        }
-                    });
-                });
             }
 
             // Бесконечное вращение колеса
@@ -642,9 +628,8 @@
                         speed = 5;
                     }
 
-                    // Бесконечное вращение
-                    const containerWidth = document.querySelector('.case').offsetWidth;
-                    const position = (elapsed * speed) % (containerWidth * 3);
+                    // Бесконечное вращение с увеличением позиции
+                    const position = (elapsed * speed) % (prizesTrack.scrollWidth / 2);
                     prizesTrack.style.transform = `translateX(-${position}px)`;
 
                     animationFrameId = requestAnimationFrame(spin);
@@ -653,17 +638,19 @@
                 spin();
             }
 
-            // Остановка вращения
+            // Остановка вращения на конкретном призе
             function stopSpinning() {
                 cancelAnimationFrame(animationFrameId);
 
-                // Вычисляем позицию для остановки
+                // Вычисляем позицию для остановки на выбранном призе
                 const prizeWidth = 80 + 20; // Ширина приза + margin
                 const containerWidth = document.querySelector('.case').offsetWidth;
-                const centerPosition = containerWidth / 2 - 40;
+                const centerPosition = containerWidth / 2 - 40; // Позиция центра
 
-                // Целевая позиция для остановки
-                const targetPosition = (containerWidth * 1.5) + (finalPrizeIndex * prizeWidth) - centerPosition;
+                // Вычисляем, сколько призов нужно прокрутить до центра
+                const itemsToCenter = Math.floor(prizesTrack.scrollWidth / prizeWidth / 2) + 3;
+                const targetIndex = itemsToCenter + finalPrizeIndex;
+                const targetPosition = targetIndex * prizeWidth - centerPosition;
 
                 // Плавная остановка
                 prizesTrack.style.transition = 'transform 2s cubic-bezier(0.23, 1, 0.32, 1)';
@@ -671,6 +658,7 @@
 
                 // Через 2 секунды показываем результат
                 setTimeout(() => {
+                    // Находим активный приз в центре
                     const activePrize = spinningPrizes[finalPrizeIndex % spinningPrizes.length];
                     const matchingPrize = finalPrizes.find(p => p.emoji === activePrize.emoji) ||
                         finalPrizes[Math.floor(Math.random() * finalPrizes.length)];
@@ -681,18 +669,21 @@
 
             // Отображение результата
             function showResult(prize) {
+                // Обновление модального окна
                 prizeResult.textContent = prize.emoji;
                 prizeResult.style.color = prize.color;
                 prizeTitle.textContent = prize.title;
                 prizeDescription.textContent = prize.description;
+
+                // Показ модалки
                 resultModal.classList.add('active');
+
+                // Эффект конфетти
                 createConfetti();
 
-                // Разблокируем кнопку
-                setTimeout(() => {
-                    isCaseOpening = false;
-                    openCaseBtn.disabled = false;
-                }, 3000);
+                // Разблокируем кнопку для следующего открытия
+                isCaseOpening = false;
+                openCaseBtn.disabled = false;
             }
 
             // Анимация конфетти
@@ -732,7 +723,7 @@
                     }, delay * 1000);
                 }
 
-                // CSS анимации
+                // Добавление CSS анимации
                 if (!document.getElementById('confetti-style')) {
                     const style = document.createElement('style');
                     style.id = 'confetti-style';
@@ -757,16 +748,58 @@
                 }, 5000);
             }
 
+            // Открытие кейса
+            openCaseBtn.addEventListener('click', () => {
+                if (isCaseOpening) return;
+                if (userBalance < 10) {
+                    tg.showAlert('Недостаточно звезд! Вам нужно минимум 10 звезд для открытия кейса.');
+                    return;
+                }
+
+                isCaseOpening = true;
+                openCaseBtn.disabled = true;
+                userBalance -= 10;
+                updateBalance();
+
+                // Вибрация
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('heavy');
+                }
+
+                // Сразу начинаем вращение без анимации открытия кейса
+                startSpinning();
+            });
+
             // Закрытие модалки
             claimBtn.addEventListener('click', () => {
                 resultModal.classList.remove('active');
-                tg.showAlert(`Ваш приз "${prizeTitle.textContent}" будет отправлен в личные сообщения бота!`);
+
+                // В реальном приложении здесь была бы логика получения приза
+                tg.showAlert(`Ваш приз "${prizeTitle.textContent}" был успешно добавлен в ваш аккаунт!`);
+
+                // Обнуление баланса для MVP
+                if (userBalance <= 0) {
+                    userBalance = 0;
+                    updateBalance();
+                    openCaseBtn.innerHTML = 'Недостаточно звезд';
+                    openCaseBtn.style.background = 'linear-gradient(135deg, #64748b, #475569)';
+                    openCaseBtn.disabled = true;
+                }
+            });
+
+            // Закрытие модалки по клику вне
+            resultModal.addEventListener('click', (e) => {
+                if (e.target === resultModal) {
+                    resultModal.classList.remove('active');
+                }
             });
 
             // Обработка кнопки назад
             tg.onEvent('backButtonClicked', () => {
                 if (resultModal.classList.contains('active')) {
                     resultModal.classList.remove('active');
+                } else {
+                    tg.close();
                 }
             });
 
@@ -775,12 +808,6 @@
             // Инициализация
             initPrizesTrack();
             updateBalance();
-
-            // Для тестирования в браузере
-            if (!tg.initData) {
-                console.log('Режим разработки: используйте тестовые данные');
-                tg.initData = 'query_id=AAHdF6IQAAAAAN0XohDnLw4y&user=%7B%22id%22%3A123456789%2C%22first_name%22%3A%22Test%22%2C%22last_name%22%3A%22User%22%2C%22username%22%3A%22testuser%22%2C%22language_code%22%3A%22ru%22%2C%22is_premium%22%3Atrue%7D&auth_date=1710000000&hash=1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z';
-            }
         });
     </script>
 </body>
