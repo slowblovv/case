@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -117,8 +116,13 @@
             font-weight: 700;
             margin-bottom: 12px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
+            /* Стандартное свойство */
+            background-clip: text;
+            /* Вендор-префикс для WebKit */
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            /* Стандартное свойство вместо вендор-префикса */
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
         }
 
         .hero-subtitle {
