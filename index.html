@@ -21,6 +21,10 @@
             --card-bg: rgba(30, 41, 59, 0.9);
             --border-radius: 20px;
             --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            
+            /* Размеры для рулетки */
+            --card-width: 90px;  /* Ширина карточки */
+            --card-gap: 10px;    /* Отступ между карточками */
         }
 
         * {
@@ -54,7 +58,6 @@
         .app-container {
             width: 100%;
             height: 100vh;
-            height: -webkit-fill-available;
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -74,8 +77,6 @@
             z-index: 10;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             padding-top: max(16px, env(safe-area-inset-top));
-            padding-left: max(16px, env(safe-area-inset-left));
-            padding-right: max(16px, env(safe-area-inset-right));
         }
 
         .logo {
@@ -85,10 +86,6 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-        }
-
-        .logo-icon {
-            color: var(--primary);
         }
 
         .stars-balance {
@@ -112,9 +109,7 @@
             flex-direction: column;
             justify-content: center;
             min-height: calc(100vh - 150px);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            overflow-x: hidden; /* Важно, чтобы рулетка не расширяла экран */
         }
 
         .hero {
@@ -124,6 +119,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            width: 100%;
         }
 
         .hero-title {
@@ -131,10 +127,9 @@
             font-weight: 700;
             margin-bottom: 12px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            background-clip: text;
             -webkit-background-clip: text;
+            background-clip: text;
             color: transparent;
-            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
         }
 
         .hero-subtitle {
@@ -145,117 +140,127 @@
             margin: 0 auto 24px;
         }
 
+        /* КОНТЕЙНЕР КЕЙСА */
         .case-container {
             perspective: 1000px;
-            margin: 0 auto;
+            margin: 20px auto 0;
+            width: 100%; 
             max-width: 100%;
             display: flex;
             justify-content: center;
             position: relative;
-            height: 320px;
-            margin-top: 20px;
+            height: 200px; /* Фиксированная высота для области прокрутки */
         }
 
         .case {
-            width: 280px;
-            height: 320px;
+            width: 100%; /* На всю ширину экрана */
+            max-width: 600px;
+            height: 100%;
             position: relative;
-            border-radius: var(--border-radius);
             background: var(--card-bg);
-            border: 2px solid rgba(99, 102, 241, 0.3);
+            border-top: 2px solid rgba(99, 102, 241, 0.3);
+            border-bottom: 2px solid rgba(99, 102, 241, 0.3);
             box-shadow: var(--shadow);
-            overflow: hidden;
+            overflow: hidden; /* Скрываем всё, что вылазит за пределы */
             display: flex;
-            justify-content: center;
             align-items: center;
         }
 
         .wheel-container {
             width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             position: relative;
-            overflow: hidden;
+            display: flex;
+            align-items: center;
         }
 
         .prizes-track {
             display: flex;
             align-items: center;
-            position: relative;
+            position: absolute; /* Абсолютное позиционирование для ленты */
+            left: 0;
             height: 100%;
-            width: 100%;
-            justify-content: center;
-            transition: transform 0.5s ease-out;
+            will-change: transform; /* Оптимизация для браузера */
+            /* Транзишн будет задаваться через JS */
         }
 
         .prize-item {
-            width: 80px;
-            height: 80px;
+            width: var(--card-width);
+            height: var(--card-width);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin: 0 10px;
+            margin-right: var(--card-gap); /* Отступ справа */
             font-size: 36px;
             font-weight: bold;
-            opacity: 0.7;
-            transition: all 0.3s ease;
-            transform: scale(0.9);
-            flex-shrink: 0;
+            flex-shrink: 0; /* Чтобы элементы не сжимались */
             border-radius: 16px;
             background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(99, 102, 241, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
         }
-
-        .prize-item.active {
-            opacity: 1;
-            transform: scale(1.1);
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-            z-index: 2;
-            background: rgba(99, 102, 241, 0.2);
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+        
+        /* Цветовая полоска редкости снизу карточки */
+        .prize-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: currentColor;
+            border-radius: 0 0 16px 16px;
+            opacity: 0.8;
         }
 
         .prize-item span {
-            font-size: 12px;
+            font-size: 10px;
             margin-top: 4px;
             color: #94a3b8;
             font-weight: 500;
             text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 90%;
         }
 
+        /* Центральная линия (указатель) */
         .highlight {
             position: absolute;
             left: 50%;
             top: 0;
             bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, transparent, var(--primary), transparent);
+            width: 4px;
+            background: #ec4899; /* Розовый указатель */
             transform: translateX(-50%);
-            z-index: 3;
+            z-index: 10;
             pointer-events: none;
+            box-shadow: 0 0 15px #ec4899;
         }
-
-        .highlight::before,
+        
+        /* Треугольник сверху указателя */
+        .highlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #ec4899;
+        }
+        /* Треугольник снизу указателя */
         .highlight::after {
             content: '';
             position: absolute;
-            width: 100px;
-            height: 2px;
-            background: var(--primary);
+            bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-        }
-
-        .highlight::before {
-            top: 20px;
-        }
-
-        .highlight::after {
-            bottom: 20px;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 15px solid #ec4899;
         }
 
         .wheel-shadow {
@@ -264,9 +269,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.5) 100%);
+            background: linear-gradient(90deg, 
+                rgba(15, 23, 42, 1) 0%, 
+                rgba(15, 23, 42, 0) 20%, 
+                rgba(15, 23, 42, 0) 80%, 
+                rgba(15, 23, 42, 1) 100%);
             pointer-events: none;
-            z-index: 1;
+            z-index: 5;
         }
 
         .open-btn-container {
@@ -278,10 +287,7 @@
             bottom: 0;
             z-index: 20;
             background: linear-gradient(transparent, rgba(15, 23, 42, 0.9) 70%);
-            backdrop-filter: blur(10px);
             padding-bottom: max(24px, env(safe-area-inset-bottom));
-            padding-left: max(16px, env(safe-area-inset-left));
-            padding-right: max(16px, env(safe-area-inset-right));
         }
 
         .open-btn {
@@ -295,24 +301,21 @@
             font-size: 20px;
             font-weight: 700;
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            transition: transform 0.2s;
+            cursor: pointer;
         }
 
         .open-btn:active {
-            transform: scale(0.98);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            transform: scale(0.96);
         }
 
         .open-btn:disabled {
-            opacity: 0.7;
+            filter: grayscale(1);
             cursor: not-allowed;
-            transform: none;
+            opacity: 0.8;
         }
 
+        /* МОДАЛКА РЕЗУЛЬТАТА */
         .result-modal {
             position: fixed;
             top: 0;
@@ -340,53 +343,26 @@
             padding: 36px 24px;
             text-align: center;
             max-width: 90%;
-            width: 360px;
+            width: 320px;
             transform: scale(0.8);
-            opacity: 0;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: 1px solid rgba(99, 102, 241, 0.3);
-            position: relative;
-            z-index: 2;
-            box-shadow: var(--shadow);
+            box-shadow: 0 0 50px rgba(99, 102, 241, 0.2);
         }
 
         .result-modal.active .modal-content {
             transform: scale(1);
-            opacity: 1;
         }
 
         .prize-reveal {
             font-size: 84px;
             margin: 16px 0;
-            animation: pulse 1.8s infinite;
+            animation: bounce 1s infinite alternate;
         }
 
-        @keyframes pulse {
-            0% {
-                text-shadow: 0 0 10px rgba(236, 72, 153, 0.7);
-            }
-
-            50% {
-                text-shadow: 0 0 25px rgba(139, 92, 246, 0.9);
-            }
-
-            100% {
-                text-shadow: 0 0 10px rgba(236, 72, 153, 0.7);
-            }
-        }
-
-        .modal-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: var(--text);
-        }
-
-        .modal-description {
-            color: #94a3b8;
-            font-size: 18px;
-            margin-bottom: 28px;
-            line-height: 1.4;
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
         }
 
         .claim-btn {
@@ -398,125 +374,21 @@
             border-radius: 16px;
             font-size: 18px;
             font-weight: 600;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .confetti {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            opacity: 0;
+            margin-top: 20px;
+            cursor: pointer;
         }
 
         footer {
             text-align: center;
-            padding: 24px 16px 40px;
+            padding: 24px;
             color: #64748b;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        footer a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        /* Адаптивность */
-        @media (max-width: 480px) {
-            .case {
-                width: 240px;
-                height: 280px;
-            }
-
-            .prize-item {
-                width: 70px;
-                height: 70px;
-                font-size: 30px;
-            }
-
-            .hero-title {
-                font-size: 24px;
-            }
-        }
-
-        @media (min-width: 768px) {
-            .case {
-                width: 320px;
-                height: 340px;
-            }
-
-            .prize-item {
-                width: 90px;
-                height: 90px;
-                font-size: 40px;
-            }
-        }
-
-        @media (min-height: 800px) {
-            .case-container {
-                height: 360px;
-            }
-
-            .case {
-                height: 360px;
-            }
-        }
-
-        /* Анимации для конфетти */
-        @keyframes fall {
-            0% {
-                transform: translateY(-10vh) rotate(0deg);
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateY(110vh) rotate(720deg);
-                opacity: 0;
-            }
-        }
-
-        /* === СТИЛИ ДЛЯ КНОПКИ ПОЛНОЭКРАННОГО РЕЖИМА === */
-        .fullscreen-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(99, 102, 241, 0.5);
-            color: var(--text);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        .fullscreen-toggle:hover {
-            background: rgba(99, 102, 241, 0.3);
-            transform: scale(1.1);
-        }
-
-        .fullscreen-toggle::before {
-            content: '⛶';
-            font-size: 18px;
-        }
-
-        .fullscreen-toggle.fullscreen::before {
-            content: '⛷';
+            font-size: 12px;
         }
     </style>
 </head>
 
 <body>
     <div class="app-container">
-        <!-- Кнопка переключения полноэкранного режима -->
-        <div class="fullscreen-toggle" id="fullscreenToggle" title="Переключить полноэкранный режим"></div>
-
         <div class="header">
             <div class="logo">
                 <div class="logo-icon">🎁</div>
@@ -525,22 +397,22 @@
             <div class="stars-balance">
                 <span>★</span>
                 <span id="balance">100</span>
-                <span>Stars</span>
             </div>
         </div>
 
         <div class="scroll-content">
             <section class="hero">
-                <h1 class="hero-title">Откройте свой кейс</h1>
-                <p class="hero-subtitle">Вращайте колесо призов и получите подарок от Telegram</p>
+                <h1 class="hero-title">Кейс Удачи</h1>
+                <p class="hero-subtitle">Испытай удачу и получи приз</p>
 
                 <div class="case-container">
                     <div class="case">
                         <div class="wheel-container">
                             <div class="wheel-shadow"></div>
+                            
                             <div class="prizes-track" id="prizesTrack">
-                                <!-- Призы будут добавлены через JavaScript -->
-                            </div>
+                                </div>
+                            
                             <div class="highlight"></div>
                         </div>
                     </div>
@@ -548,411 +420,250 @@
             </section>
 
             <footer>
-                <p>Все призы виртуальные и отправляются непосредственно в Telegram</p>
-                <p>Разработано для Telegram Mini Apps • <a href="#">Правила</a> • <a href="#">Поддержка</a></p>
+                <p>Telegram Mini App Case Opener MVP</p>
             </footer>
         </div>
 
         <div class="open-btn-container">
             <button class="open-btn" id="openCaseBtn">
-                <span>Открыть кейс</span>
-                <span>за 10 ★</span>
+                Открыть за 10 ★
             </button>
         </div>
     </div>
 
     <div class="result-modal" id="resultModal">
         <div class="modal-content">
-            <h2 class="modal-title">Поздравляем!</h2>
-            <div class="prize-reveal" id="prizeResult">🎉</div>
-            <div class="modal-title" id="prizeTitle">Вы выиграли приз!</div>
-            <p class="modal-description" id="prizeDescription">Ваш приз будет отправлен в Telegram</p>
-            <button class="claim-btn" id="claimBtn">Забрать приз</button>
+            <h2 class="modal-title" style="color:var(--primary)">Поздравляем!</h2>
+            <div class="prize-reveal" id="prizeResultIcon">💎</div>
+            <div style="font-size: 20px; font-weight: bold; margin-bottom: 5px;" id="prizeResultName">Premium</div>
+            <p style="color: #94a3b8; font-size: 14px;" id="prizeResultDesc">Приз будет выдан автоматически</p>
+            <button class="claim-btn" id="claimBtn">Забрать</button>
         </div>
     </div>
 
     <script>
-        // Основная функция инициализации
+        // === КОНФИГУРАЦИЯ ===
+        
+        // Список предметов с шансами (chance - это вес, чем больше, тем чаще падает)
+        // chance: 1000 = очень часто, chance: 5 = очень редко
+        const ITEMS = [
+            { id: 1, name: 'Стикерпак', emoji: '🎮', color: '#8b5cf6', chance: 500, type: 'common' },
+            { id: 2, name: 'Аватарка', emoji: '🖼️', color: '#ec4899', chance: 400, type: 'common' },
+            { id: 3, name: 'Эмодзи', emoji: '✨', color: '#10b981', chance: 300, type: 'rare' },
+            { id: 4, name: '100 Звезд', emoji: '🎟️', color: '#fbbf24', chance: 50, type: 'epic' },
+            { id: 5, name: 'NFT Art', emoji: '🎨', color: '#6366f1', chance: 10, type: 'legendary' },
+            { id: 6, name: 'Premium', emoji: '💎', color: '#0ea5e9', chance: 5, type: 'gold' }
+        ];
+
+        // Настройки рулетки
+        const CARD_WIDTH = 90; // Должно совпадать с CSS var(--card-width)
+        const CARD_GAP = 10;   // Должно совпадать с CSS var(--card-gap)
+        const TOTAL_CARDS = 60; // Длина ленты генерации
+        const WIN_INDEX = 45;   // На какой позиции всегда останавливается выигрыш (индекс в массиве)
+        const ANIMATION_DURATION = 6000; // Длительность прокрутки (мс)
+
+        let userBalance = 100;
+        let isOpening = false;
+
+        // Элементы DOM
+        const tg = window.Telegram.WebApp;
+        const els = {
+            balance: document.getElementById('balance'),
+            track: document.getElementById('prizesTrack'),
+            btn: document.getElementById('openCaseBtn'),
+            modal: document.getElementById('resultModal'),
+            modalIcon: document.getElementById('prizeResultIcon'),
+            modalName: document.getElementById('prizeResultName'),
+            modalDesc: document.getElementById('prizeResultDesc'),
+            claimBtn: document.getElementById('claimBtn')
+        };
+
+        // === ИНИЦИАЛИЗАЦИЯ ===
         function initApp() {
-            const tg = window.Telegram.WebApp;
-
-            // Инициализация Telegram WebApp
             tg.ready();
-            tg.expand(); // Расширяем на всю доступную высоту
-
-            // Элементы DOM
-            const openCaseBtn = document.getElementById('openCaseBtn');
-            const resultModal = document.getElementById('resultModal');
-            const prizeResult = document.getElementById('prizeResult');
-            const prizeTitle = document.getElementById('prizeTitle');
-            const prizeDescription = document.getElementById('prizeDescription');
-            const claimBtn = document.getElementById('claimBtn');
-            const balanceElement = document.getElementById('balance');
-            const prizesTrack = document.getElementById('prizesTrack');
-            const fullscreenToggle = document.getElementById('fullscreenToggle');
-
-            // Состояние приложения
-            let userBalance = 100;
-            let isCaseOpening = false;
-            let spinning = false;
-            let spinDuration = 4000;
-            let animationFrameId = null;
-            let spinStartTime = 0;
-            let finalPrizeIndex = -1;
-            let isFullscreen = false;
-
-            // Призы для вращения
-            const spinningPrizes = [
-                { emoji: '💎', name: 'Premium' },
-                { emoji: '🚀', name: 'Ракета' },
-                { emoji: '🎮', name: 'Стикерпак' },
-                { emoji: '🖼️', name: 'Аватарка' },
-                { emoji: '✨', name: 'Эмодзи' },
-                { emoji: '🎟️', name: 'Звезды' },
-                { emoji: '🎨', name: 'NFT Art' },
-                { emoji: '👑', name: 'VIP' }
-            ];
-
-            // Финальные призы
-            const finalPrizes = [
-                { emoji: '💎', title: 'Telegram Premium', description: '30 дней Premium подписки', color: '#0ea5e9' },
-                { emoji: '🎟️', title: '100 Звезд', description: '100 Telegram Stars для покупок', color: '#fbbf24' },
-                { emoji: '🎮', title: 'Премиум Стикеры', description: 'Эксклюзивный набор стикеров', color: '#8b5cf6' },
-                { emoji: '🖼️', title: 'Уникальная Аватарка', description: 'Специальная аватарка для профиля', color: '#ec4899' },
-                { emoji: '✨', title: 'Эксклюзивные Эмодзи', description: 'Набор уникальных эмодзи для чатов', color: '#10b981' },
-                { emoji: '🎨', title: 'Цифровое Искусство', description: 'Уникальное NFT изображение', color: '#6366f1' }
-            ];
-
-            // ===== ПОЛНОЭКРАННЫЙ РЕЖИМ =====
-            function setupFullscreen() {
-                // Проверяем поддержку полноэкранного режима
-                if (!tg.isVersionAtLeast('6.1')) {
-                    console.log('Fullscreen mode not supported in this Telegram version');
-                    fullscreenToggle.style.display = 'none';
-                    return;
-                }
-
-                // Обработчик кнопки полноэкранного режима
-                fullscreenToggle.addEventListener('click', toggleFullscreen);
-
-                // Автоматически запрашиваем полноэкранный режим при загрузке
-                setTimeout(() => {
-                    requestFullscreen();
-                }, 1000);
-
-                // Обработчик изменения ориентации
-                window.addEventListener('resize', handleResize);
-            }
-
-            function toggleFullscreen() {
-                if (isFullscreen) {
-                    exitFullscreen();
-                } else {
-                    requestFullscreen();
-                }
-            }
-
-            function requestFullscreen() {
-                // Используем метод Telegram Web App для запроса полноэкранного режима
-                tg.requestFullscreen();
-                isFullscreen = true;
-                fullscreenToggle.classList.add('fullscreen');
-
-                console.log('Requested fullscreen mode');
-            }
-
-            function exitFullscreen() {
-                // Используем метод Telegram Web App для выхода из полноэкранного режима
-                tg.exitFullscreen();
-                isFullscreen = false;
-                fullscreenToggle.classList.remove('fullscreen');
-
-                console.log('Exited fullscreen mode');
-            }
-
-            function handleResize() {
-                // При изменении размера окна обновляем состояние
-                setTimeout(() => {
-                    if (window.innerHeight === screen.height) {
-                        isFullscreen = true;
-                        fullscreenToggle.classList.add('fullscreen');
-                    } else {
-                        isFullscreen = false;
-                        fullscreenToggle.classList.remove('fullscreen');
-                    }
-                }, 100);
-            }
-
-            // Обработчики событий полноэкранного режима
-            tg.onEvent('viewportChanged', (data) => {
-                console.log('Viewport changed:', data);
-                // Обновляем состояние при изменении viewport
-                handleResize();
-            });
-
-            // ===== ИГРОВАЯ ЛОГИКА =====
-
-            // Обновление баланса
-            function updateBalance() {
-                balanceElement.textContent = userBalance;
-            }
-
-            // Инициализация трека призов
-            function initPrizesTrack() {
-                prizesTrack.innerHTML = '';
-                const totalItems = 50;
-                for (let i = 0; i < totalItems; i++) {
-                    const prize = spinningPrizes[i % spinningPrizes.length];
-                    const prizeItem = document.createElement('div');
-                    prizeItem.className = 'prize-item';
-                    prizeItem.dataset.index = i;
-                    prizeItem.innerHTML = `
-                        <div>${prize.emoji}</div>
-                        <span>${prize.name}</span>
-                    `;
-                    prizesTrack.appendChild(prizeItem);
-                }
-            }
-
-            // Открытие кейса
-            openCaseBtn.addEventListener('click', async () => {
-                if (isCaseOpening) return;
-
-                if (userBalance < 10) {
-                    if (confirm('Недостаточно звезд! Хотите купить 10 звезд?')) {
-                        try {
-                            await buyStars();
-                        } catch (error) {
-                            console.error('Ошибка покупки:', error);
-                            tg.showAlert('Не удалось завершить покупку.');
-                        }
-                    }
-                    return;
-                }
-
-                isCaseOpening = true;
-                openCaseBtn.disabled = true;
-                userBalance -= 10;
-                updateBalance();
-
-                // Вибрация
-                if (tg.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('heavy');
-                }
-
-                startSpinning();
-            });
-
-            // Покупка звезд
-            async function buyStars() {
-                return new Promise((resolve, reject) => {
-                    const userData = tg.initDataUnsafe?.user;
-                    const userId = userData?.id || 'test_user';
-
-                    const invoice = {
-                        title: "10 Telegram Stars",
-                        description: "Для открытия кейсов в StarBox",
-                        payload: `buy_10_stars_user_${userId}`,
-                        prices: [{
-                            label: "10 Stars",
-                            amount: 25
-                        }],
-                        currency: "XTR",
-                        provider_token: "",
-                        max_tip_amount: 0,
-                        suggested_tip_amounts: []
-                    };
-
-                    tg.openInvoice(JSON.stringify(invoice), (status) => {
-                        if (status === "paid") {
-                            tg.showAlert("Покупка успешна! Баланс обновлен.");
-                            userBalance += 10;
-                            updateBalance();
-                            resolve();
-                        } else {
-                            reject(new Error(`Покупка отменена: ${status}`));
-                        }
-                    });
-                });
-            }
-
-            // Вращение колеса
-            function startSpinning() {
-                spinning = true;
-                spinStartTime = Date.now();
-                finalPrizeIndex = Math.floor(Math.random() * spinningPrizes.length);
-
-                prizesTrack.style.transition = 'none';
-                prizesTrack.style.transform = 'translateX(0)';
-
-                document.querySelectorAll('.prize-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-
-                const spin = () => {
-                    if (!spinning) return;
-
-                    const elapsed = Date.now() - spinStartTime;
-                    if (elapsed >= spinDuration) {
-                        stopSpinning();
-                        return;
-                    }
-
-                    const progress = elapsed / spinDuration;
-                    let speed;
-
-                    if (progress < 0.3) {
-                        speed = 0.5 + progress * 5;
-                    } else if (progress > 0.7) {
-                        speed = (1 - progress) * 10 + 1;
-                    } else {
-                        speed = 5;
-                    }
-
-                    const containerWidth = document.querySelector('.case').offsetWidth;
-                    const position = (elapsed * speed) % (containerWidth * 3);
-                    prizesTrack.style.transform = `translateX(-${position}px)`;
-
-                    animationFrameId = requestAnimationFrame(spin);
-                };
-
-                spin();
-            }
-
-            function stopSpinning() {
-                cancelAnimationFrame(animationFrameId);
-
-                const prizeWidth = 80 + 20;
-                const containerWidth = document.querySelector('.case').offsetWidth;
-                const centerPosition = containerWidth / 2 - 40;
-                const targetPosition = (containerWidth * 1.5) + (finalPrizeIndex * prizeWidth) - centerPosition;
-
-                prizesTrack.style.transition = 'transform 2s cubic-bezier(0.23, 1, 0.32, 1)';
-                prizesTrack.style.transform = `translateX(-${targetPosition}px)`;
-
-                setTimeout(() => {
-                    const activePrize = spinningPrizes[finalPrizeIndex % spinningPrizes.length];
-                    const matchingPrize = finalPrizes.find(p => p.emoji === activePrize.emoji) ||
-                        finalPrizes[Math.floor(Math.random() * finalPrizes.length)];
-
-                    showResult(matchingPrize);
-                }, 2000);
-            }
-
-            function showResult(prize) {
-                prizeResult.textContent = prize.emoji;
-                prizeResult.style.color = prize.color;
-                prizeTitle.textContent = prize.title;
-                prizeDescription.textContent = prize.description;
-                resultModal.classList.add('active');
-                createConfetti();
-
-                setTimeout(() => {
-                    isCaseOpening = false;
-                    openCaseBtn.disabled = false;
-                }, 3000);
-            }
-
-            function createConfetti() {
-                const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#fbbf24', '#10b981', '#0ea5e9'];
-                const container = document.createElement('div');
-                container.style.position = 'fixed';
-                container.style.top = '0';
-                container.style.left = '0';
-                container.style.width = '100%';
-                container.style.height = '100%';
-                container.style.pointerEvents = 'none';
-                container.style.zIndex = '50';
-                document.body.appendChild(container);
-
-                for (let i = 0; i < 120; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.className = 'confetti';
-                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.left = `${Math.random() * 100}%`;
-                    confetti.style.width = `${Math.random() * 8 + 4}px`;
-                    confetti.style.height = `${Math.random() * 8 + 4}px`;
-                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-
-                    const duration = Math.random() * 3 + 2;
-                    const delay = Math.random() * 2;
-
-                    confetti.style.animation = `fall ${duration}s linear ${delay}s forwards`;
-                    confetti.style.opacity = '0';
-
-                    container.appendChild(confetti);
-
-                    setTimeout(() => {
-                        confetti.style.opacity = '1';
-                    }, delay * 1000);
-                }
-
-                setTimeout(() => {
-                    container.remove();
-                }, 5000);
-            }
-
-            claimBtn.addEventListener('click', () => {
-                resultModal.classList.remove('active');
-                tg.showAlert(`Ваш приз "${prizeTitle.textContent}" будет отправлен в личные сообщения бота!`);
-            });
-
-            // Обработка кнопки назад
-            tg.onEvent('backButtonClicked', () => {
-                if (resultModal.classList.contains('active')) {
-                    resultModal.classList.remove('active');
-                } else if (isFullscreen) {
-                    exitFullscreen();
-                }
-            });
-
-            tg.BackButton?.show();
-
-            // Инициализация
-            setupFullscreen();
-            initPrizesTrack();
+            tg.expand();
+            
+            // Запрещаем скролл приложения во время игры
+            document.body.style.overflow = 'hidden'; 
+            
+            renderInitialTrack();
             updateBalance();
 
-            // Для тестирования в браузере
-            if (!tg.initData) {
-                console.log('Режим разработки: используйте тестовые данные');
+            // Обработчики
+            els.btn.addEventListener('click', startCaseOpening);
+            els.claimBtn.addEventListener('click', closeResult);
+        }
 
-                // Эмуляция методов полноэкранного режима для браузера
-                if (!tg.requestFullscreen) {
-                    tg.requestFullscreen = function () {
-                        if (document.documentElement.requestFullscreen) {
-                            document.documentElement.requestFullscreen();
-                        } else if (document.documentElement.webkitRequestFullscreen) {
-                            document.documentElement.webkitRequestFullscreen();
-                        } else if (document.documentElement.msRequestFullscreen) {
-                            document.documentElement.msRequestFullscreen();
-                        }
-                        isFullscreen = true;
-                        fullscreenToggle.classList.add('fullscreen');
-                    };
+        // === ЛОГИКА ШАНСОВ ===
+        // Алгоритм взвешенного рандома
+        function getRandomItem() {
+            let totalWeight = 0;
+            ITEMS.forEach(item => totalWeight += item.chance);
 
-                    tg.exitFullscreen = function () {
-                        if (document.exitFullscreen) {
-                            document.exitFullscreen();
-                        } else if (document.webkitExitFullscreen) {
-                            document.webkitExitFullscreen();
-                        } else if (document.msExitFullscreen) {
-                            document.msExitFullscreen();
-                        }
-                        isFullscreen = false;
-                        fullscreenToggle.classList.remove('fullscreen');
-                    };
-
-                    tg.isVersionAtLeast = function (version) {
-                        return true; // Для тестирования в браузере
-                    };
+            let random = Math.random() * totalWeight;
+            
+            for (let i = 0; i < ITEMS.length; i++) {
+                if (random < ITEMS[i].chance) {
+                    return ITEMS[i];
                 }
+                random -= ITEMS[i].chance;
+            }
+            return ITEMS[0]; // Fallback
+        }
+
+        // === ОТРИСОВКА ===
+        function createCard(item) {
+            const el = document.createElement('div');
+            el.className = 'prize-item';
+            el.style.color = item.color; // Для полоски снизу
+            el.innerHTML = `
+                <div style="font-size:32px">${item.emoji}</div>
+                <span>${item.name}</span>
+            `;
+            return el;
+        }
+
+        // Рисуем статичную красивую ленту при старте
+        function renderInitialTrack() {
+            els.track.innerHTML = '';
+            els.track.style.transition = 'none';
+            els.track.style.transform = 'translateX(0px)';
+            
+            // Просто заполняем экран случайными предметами
+            for (let i = 0; i < 10; i++) {
+                const item = getRandomItem(); // Можно просто рандом, не взвешенный
+                els.track.appendChild(createCard(item));
             }
         }
 
-        // Запуск приложения при загрузке
+        // === ПРОЦЕСС ОТКРЫТИЯ ===
+        function startCaseOpening() {
+            if (isOpening) return;
+            if (userBalance < 10) {
+                tg.showAlert("Недостаточно звезд!");
+                return;
+            }
+
+            isOpening = true;
+            userBalance -= 10;
+            updateBalance();
+            els.btn.disabled = true;
+            els.btn.textContent = "Открываем...";
+
+            // 1. ОПРЕДЕЛЯЕМ ПОБЕДИТЕЛЯ ЗАРАНЕЕ
+            const winningItem = getRandomItem();
+            console.log("Победитель определен:", winningItem.name);
+
+            // 2. ГЕНЕРИРУЕМ ЛЕНТУ
+            // Очищаем трек
+            els.track.innerHTML = '';
+            els.track.style.transition = 'none';
+            els.track.style.transform = 'translateX(0px)';
+
+            // Заполняем ленту мусором + вставляем победителя на WIN_INDEX
+            for (let i = 0; i < TOTAL_CARDS; i++) {
+                let item;
+                if (i === WIN_INDEX) {
+                    item = winningItem;
+                } else {
+                    // Чтобы рядом с победителем не было таких же предметов (для красоты)
+                    do {
+                        item = getRandomItem();
+                    } while (i > 0 && i === WIN_INDEX && item.id === winningItem.id);
+                }
+                els.track.appendChild(createCard(item));
+            }
+
+            // 3. РАСЧЕТ КООРДИНАТ ОСТАНОВКИ
+            // Ширина одного элемента с отступом
+            const itemFullWidth = CARD_WIDTH + CARD_GAP;
+            
+            // Центр контейнера (вьюпорта кейса)
+            const containerCenter = document.querySelector('.case').offsetWidth / 2;
+            
+            // Где находится центр выигрышной карточки относительно начала ленты
+            // (WIN_INDEX * width) + половина ширины самой карточки
+            const winnerCenter = (WIN_INDEX * itemFullWidth) + (CARD_WIDTH / 2);
+
+            // Добавляем рандомный разброс внутри карточки (+- 35% от ширины), чтобы стрелка не всегда была ровно по центру
+            const randomOffset = Math.floor(Math.random() * (CARD_WIDTH * 0.7)) - (CARD_WIDTH * 0.35);
+
+            // Итоговое смещение: мы хотим, чтобы winnerCenter оказался в containerCenter
+            // Формула: translateX = -(Где_карточка - Где_центр_экрана + Рандом)
+            const scrollPosition = -(winnerCenter - containerCenter + randomOffset);
+
+            // 4. ЗАПУСК АНИМАЦИИ
+            // Forced reflow (заставляем браузер применить изменения DOM перед анимацией)
+            els.track.getBoundingClientRect(); 
+
+            // Включаем плавность
+            // cubic-bezier(0.15, 1, 0.3, 1) - это "Ease Out Quart", резкий старт и очень медленная остановка
+            els.track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.12, 0.8, 0.1, 1)`;
+            
+            // Двигаем!
+            els.track.style.transform = `translateX(${scrollPosition}px)`;
+
+            // Звук (вибрация) в начале
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+
+            // 5. ЗАВЕРШЕНИЕ
+            setTimeout(() => {
+                showResult(winningItem);
+                
+                // Вибрация успеха
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            }, ANIMATION_DURATION);
+        }
+
+        function showResult(item) {
+            els.modalIcon.textContent = item.emoji;
+            els.modalName.textContent = item.name;
+            els.modalName.style.color = item.color;
+            els.modal.classList.add('active');
+            
+            // Запускаем конфетти (простая реализация)
+            createConfetti();
+        }
+
+        function closeResult() {
+            els.modal.classList.remove('active');
+            isOpening = false;
+            els.btn.disabled = false;
+            els.btn.textContent = "Открыть за 10 ★";
+            
+            // Сбрасываем ленту на начало, чтобы было красиво
+            // (можно оставить как есть, но тогда при следующем клике будет скачок)
+            // Лучшая практика: плавно убрать ленту или оставить выигрыш на экране
+        }
+
+        function updateBalance() {
+            els.balance.textContent = userBalance;
+        }
+
+        // Простой эффект конфетти без внешних библиотек
+        function createConfetti() {
+            for(let i=0; i<50; i++) {
+                const conf = document.createElement('div');
+                conf.style.position = 'fixed';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.top = '-10px';
+                conf.style.width = '8px';
+                conf.style.height = '8px';
+                conf.style.background = ['#f00', '#0f0', '#00f', '#ff0', '#f0f'][Math.floor(Math.random()*5)];
+                conf.style.zIndex = 200;
+                conf.style.transition = 'top 2s linear, opacity 2s ease';
+                document.body.appendChild(conf);
+                
+                setTimeout(() => {
+                    conf.style.top = '110vh';
+                    conf.style.opacity = 0;
+                }, 100);
+                
+                setTimeout(() => conf.remove(), 2100);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
-
 </html>
